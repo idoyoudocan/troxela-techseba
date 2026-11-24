@@ -9,6 +9,16 @@ Route::get('/', function () {
     return response()->file(public_path('home.html'));
 });
 
+// Vendor scripts (Alpine.js + Tailwind Play) are served locally now, so the
+// pages no longer depend on jsDelivr / cdn.tailwindcss.com at runtime.
+Route::get('/vendor/{file}', function (string $file) {
+    $allowed = ['alpine.min.js', 'alpine-collapse.min.js', 'tailwind-play.js'];
+
+    abort_unless(in_array($file, $allowed, true), 404);
+
+    return response()->file(public_path('vendor/' . $file));
+})->where('file', '[A-Za-z0-9_.\-]+');
+
 // The live server does not serve the static template files directly
 // (every .html request falls through to Laravel and 404s), so serve them
 // through Laravel too. Strict allowlist — no path traversal.
