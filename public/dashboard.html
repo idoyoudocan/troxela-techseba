@@ -1,0 +1,1572 @@
+<!doctype html>
+<html lang="bn" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Admin Dashboard - Tailwind CSS & Alpine.js</title>
+    <meta name="description" content="Responsive admin dashboard panel built with HTML, Tailwind CSS, and Alpine.js featuring collapsible animated sidebar with accordions, data table, and complete form features." />
+    <meta property="og:title" content="Modern Admin Dashboard" />
+    <meta property="og:description" content="Responsive admin dashboard panel built with HTML, Tailwind CSS, and Alpine.js." />
+    
+    <!-- Google Fonts for crisp typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS Play CDN (Enables double-click opening in browser without local build) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#eef2ff',
+                100: '#e0e7ff',
+                200: '#c7d2fe',
+                500: '#6366f1',
+                600: '#4f46e5',
+                700: '#4338ca',
+                800: '#3730a3',
+                900: '#312e81',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Custom Animation & Scrollbar Styles -->
+    <link rel="stylesheet" href="./style.css">
+
+    <!-- Alpine.js Collapse Plugin -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js Core Library -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
+    <!-- Dashboard State & Methods -->
+    <script src="./app.js"></script>
+  </head>
+
+  <body x-data="dashboardApp" x-cloak class="h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+    <!-- ================================================================= -->
+    <!-- SVG SYMBOLS DEFINITION (Zero network latency, 100% offline ready) -->
+    <!-- ================================================================= -->
+    <svg class="hidden" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol>
+        <symbol id="icon-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+        <symbol id="icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+        <symbol id="icon-table" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></symbol>
+        <symbol id="icon-form" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></symbol>
+        <symbol id="icon-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+        <symbol id="icon-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></symbol>
+        <symbol id="icon-cog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+        <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+        <symbol id="icon-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+        <symbol id="icon-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></symbol>
+        <symbol id="icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol>
+        <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+        <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+        <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
+        <symbol id="icon-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
+        <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+        <symbol id="icon-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></symbol>
+        <symbol id="icon-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></symbol>
+        <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+      </defs>
+    </svg>
+
+    <!-- Mobile Backdrop Blur (Show/Hide smoothly when sidebar is active on mobile) -->
+    <div 
+      x-show="sidebarOpen" 
+      x-transition:enter="transition-opacity ease-linear duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition-opacity ease-linear duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="sidebarOpen = false" 
+      class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs lg:hidden"
+    ></div>
+
+    <div class="flex h-screen overflow-hidden">
+
+      <!-- ================================================================= -->
+      <!-- 1. LEFT SIDEBAR (Collapsible, Animated, Accordions, Small & Large Screens) -->
+      <!-- ================================================================= -->
+      <aside 
+        id="main-sidebar"
+        class="sidebar-transition fixed inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-xl lg:shadow-none lg:static"
+        :class="{
+          // Mobile state: slide in/out
+          'translate-x-0': sidebarOpen,
+          '-translate-x-full lg:translate-x-0': !sidebarOpen,
+          // Desktop collapse state (full 260px vs compact 72px)
+          'w-64': !sidebarCollapsed,
+          'lg:w-20 w-64': sidebarCollapsed,
+          'lg:hidden': !sidebarOpen && window.innerWidth >= 1024
+        }"
+      >
+        <!-- Sidebar Brand / Logo Header -->
+        <div class="h-16 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+          <a href="#" @click.prevent="switchView('dashboard')" class="flex items-center gap-3 group overflow-hidden">
+            
+            <!-- ================================================================= -->
+            <!-- LOGO ICON: Replace this SVG with your custom logo image or brand  -->
+            <!-- <img src="your-logo.png" alt="Logo" class="w-9 h-9 object-contain" /> -->
+            <!-- ================================================================= -->
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                <polyline points="2 17 12 22 22 17" />
+                <polyline points="2 12 12 17 22 12" />
+              </svg>
+            </div>
+
+            <!-- Brand Text (Hidden when collapsed on desktop) -->
+            <div x-show="!sidebarCollapsed" x-transition.opacity class="flex flex-col truncate">
+              <span class="font-bold text-lg tracking-tight text-slate-900 dark:text-white leading-none">Admin<span class="text-indigo-600 dark:text-indigo-400">Pro</span></span>
+              <span class="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Control Panel</span>
+            </div>
+          </a>
+
+          <!-- Mobile Close Button (X) -->
+          <button @click="sidebarOpen = false" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <svg class="w-5 h-5"><use href="#icon-x"/></svg>
+          </button>
+
+          <!-- Desktop Collapse / Mini-bar Toggle Button -->
+          <button 
+            @click="toggleSidebarCollapse()" 
+            class="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
+            :title="sidebarCollapsed ? 'Expand Sidebar' : 'Collapse to Mini-bar'"
+          >
+            <svg class="w-5 h-5 transition-transform duration-300" :class="{'rotate-180': sidebarCollapsed}">
+              <use href="#icon-chevron-left"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation List (Smooth scrolling & Accordions) -->
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 text-sm font-medium">
+
+          <!-- Section Label -->
+          <div x-show="!sidebarCollapsed" class="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            Overview
+          </div>
+
+          <!-- 1. Dashboard Link -->
+          <button 
+            @click="switchView('dashboard')"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left"
+            :class="currentView === 'dashboard' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'"
+          >
+            <svg class="w-5 h-5 shrink-0" :class="currentView === 'dashboard' ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"><use href="#icon-dashboard"/></svg>
+            <span x-show="!sidebarCollapsed" class="truncate flex-1">ড্যাশবোর্ড (Dashboard)</span>
+            <span x-show="!sidebarCollapsed && currentView === 'dashboard'" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+          </button>
+
+          <!-- Storefront Product Showcase Link -->
+          <a 
+            href="home.html"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all duration-150 group text-left border border-indigo-200/50 dark:border-indigo-800/50"
+          >
+            <svg class="w-5 h-5 shrink-0 text-indigo-600 dark:text-indigo-400"><use href="#icon-cart"/></svg>
+            <span x-show="!sidebarCollapsed" class="truncate flex-1 font-bold">শপ শোকেস (Store)</span>
+            <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-indigo-600 text-white rounded-md">Home</span>
+          </a>
+
+          <!-- Full Product Detail Page Link -->
+          <a 
+            href="product.html"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-150 group text-left"
+          >
+            <svg class="w-5 h-5 shrink-0 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><use href="#icon-sparkles"/></svg>
+            <span x-show="!sidebarCollapsed" class="truncate flex-1 font-medium">প্রোডাক্ট পেজ (PDP)</span>
+            <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 text-[9px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md">Full</span>
+          </a>
+
+          <!-- 2. Data Table Page Link (Highlight requested by user) -->
+          <button 
+            @click="switchView('table')"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left"
+            :class="currentView === 'table' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'"
+          >
+            <svg class="w-5 h-5 shrink-0" :class="currentView === 'table' ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"><use href="#icon-table"/></svg>
+            <span x-show="!sidebarCollapsed" class="truncate flex-1">ডাটা টেবিল (Data Table)</span>
+            <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-md">Live</span>
+          </button>
+
+          <!-- 3. Form Page Link (Highlight requested by user) -->
+          <button 
+            @click="switchView('form')"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group text-left"
+            :class="currentView === 'form' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'"
+          >
+            <svg class="w-5 h-5 shrink-0" :class="currentView === 'form' ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'"><use href="#icon-form"/></svg>
+            <span x-show="!sidebarCollapsed" class="truncate flex-1">অল ফিচার ফর্ম (Form)</span>
+            <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-md">Full</span>
+          </button>
+
+          <!-- Section Label -->
+          <div x-show="!sidebarCollapsed" class="pt-3 px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            ম্যানেজমেন্ট গ্রুপ (Accordions)
+          </div>
+
+          <!-- 4. Accordion Group: User Management -->
+          <div class="space-y-1">
+            <button 
+              @click="toggleAccordion('users')" 
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white transition-all group text-left"
+            >
+              <svg class="w-5 h-5 shrink-0 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><use href="#icon-users"/></svg>
+              <span x-show="!sidebarCollapsed" class="truncate flex-1">ইউজার ম্যানেজমেন্ট</span>
+              <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openAccordions.users}">
+                <use href="#icon-chevron-down"/>
+              </svg>
+            </button>
+
+            <!-- Accordion Submenu Items -->
+            <div x-show="openAccordions.users && !sidebarCollapsed" x-collapse class="pl-9 pr-2 space-y-1">
+              <a href="#" @click.prevent="switchView('table')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                সকল ইউজার লিস্ট (User List)
+              </a>
+              <a href="#" @click.prevent="openAddUserModal()" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                + নতুন ইউজার যোগ করুন
+              </a>
+              <a href="#" @click.prevent="showToast('Roles & Permissions', 'Role management module loaded.')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                রোল ও পারমিশন (Permissions)
+              </a>
+            </div>
+          </div>
+
+          <!-- 5. Accordion Group: E-Commerce / Products -->
+          <div class="space-y-1">
+            <button 
+              @click="toggleAccordion('products')" 
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white transition-all group text-left"
+            >
+              <svg class="w-5 h-5 shrink-0 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><use href="#icon-cart"/></svg>
+              <span x-show="!sidebarCollapsed" class="truncate flex-1">প্রোডাক্টস ও অর্ডার</span>
+              <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openAccordions.products}">
+                <use href="#icon-chevron-down"/>
+              </svg>
+            </button>
+
+            <!-- Accordion Submenu Items -->
+            <div x-show="openAccordions.products && !sidebarCollapsed" x-collapse class="pl-9 pr-2 space-y-1">
+              <a href="#" @click.prevent="switchView('table')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                সকল প্রোডাক্ট তালিকা
+              </a>
+              <a href="#" @click.prevent="switchView('form')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                নতুন আইটেম এন্ট্রি ফর্ম
+              </a>
+              <a href="#" @click.prevent="showToast('Orders List', 'Navigated to Order tracking.')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                অর্ডার ট্র্যাকিং ও চালান
+              </a>
+            </div>
+          </div>
+
+          <!-- 6. Accordion Group: Reports & Analytics -->
+          <div class="space-y-1">
+            <button 
+              @click="toggleAccordion('reports')" 
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white transition-all group text-left"
+            >
+              <svg class="w-5 h-5 shrink-0 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><use href="#icon-chart"/></svg>
+              <span x-show="!sidebarCollapsed" class="truncate flex-1">রিপোর্ট ও এনালাইটিক্স</span>
+              <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openAccordions.reports}">
+                <use href="#icon-chevron-down"/>
+              </svg>
+            </button>
+
+            <!-- Accordion Submenu Items -->
+            <div x-show="openAccordions.reports && !sidebarCollapsed" x-collapse class="pl-9 pr-2 space-y-1">
+              <a href="#" @click.prevent="switchView('dashboard')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                বিক্রি রিপোর্ট (Sales Stats)
+              </a>
+              <a href="#" @click.prevent="showToast('Analytics', 'Generating PDF report.')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                ইউজার এক্টিভিটি রিপোর্ট
+              </a>
+            </div>
+          </div>
+
+          <!-- 7. Accordion Group: Settings -->
+          <div class="space-y-1">
+            <button 
+              @click="toggleAccordion('settings')" 
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white transition-all group text-left"
+            >
+              <svg class="w-5 h-5 shrink-0 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><use href="#icon-cog"/></svg>
+              <span x-show="!sidebarCollapsed" class="truncate flex-1">সেটিংস ও থিম</span>
+              <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openAccordions.settings}">
+                <use href="#icon-chevron-down"/>
+              </svg>
+            </button>
+
+            <div x-show="openAccordions.settings && !sidebarCollapsed" x-collapse class="pl-9 pr-2 space-y-1">
+              <a href="#" @click.prevent="switchView('form')" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                প্রোফাইল সেটিংস (Profile)
+              </a>
+              <a href="#" @click.prevent="quickActionOpen = true" class="block py-1.5 px-2.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                থিম ও লগো কালার সেটিংস
+              </a>
+            </div>
+          </div>
+
+          <!-- Section Label -->
+          <div x-show="!sidebarCollapsed" class="pt-3 px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center justify-between">
+            <span>অথেন্টিকেশন স্যুট</span>
+            <span class="px-1.5 py-0.2 text-[9px] font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-md">New</span>
+          </div>
+
+          <!-- 8. Accordion Group: Authentication Suite -->
+          <div class="space-y-1">
+            <button 
+              @click="toggleAccordion('auth')" 
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white transition-all group text-left"
+            >
+              <svg class="w-5 h-5 shrink-0 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"><use href="#icon-lock"/></svg>
+              <span x-show="!sidebarCollapsed" class="truncate flex-1">অথেন্টিকেশন পেজ</span>
+              <span x-show="!sidebarCollapsed" class="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-md">6 Pages</span>
+              <svg x-show="!sidebarCollapsed" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="{'rotate-180': openAccordions.auth}">
+                <use href="#icon-chevron-down"/>
+              </svg>
+            </button>
+
+            <!-- Auth Submenu Items -->
+            <div x-show="openAccordions.auth && !sidebarCollapsed" x-collapse class="pl-9 pr-2 space-y-1">
+              <a href="login.html" class="flex items-center justify-between py-1.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                <span>১. লগইন পেজ (Login)</span>
+                <span class="text-[10px] text-slate-400">↗</span>
+              </a>
+              <a href="register.html" class="flex items-center justify-between py-1.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                <span>২. রেজিস্ট্রেশন (Register)</span>
+                <span class="text-[10px] text-slate-400">↗</span>
+              </a>
+              <a href="forgot-password.html" class="flex items-center justify-between py-1.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                <span>৩. ফরগট পাসওয়ার্ড</span>
+                <span class="text-[10px] text-slate-400">↗</span>
+              </a>
+              <a href="otp.html" class="flex items-center justify-between py-1.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                <span>৪. ২-ধাপ ওটিপি (OTP 2FA)</span>
+                <span class="text-[10px] text-slate-400">↗</span>
+              </a>
+              <a href="reset-password.html" class="flex items-center justify-between py-1.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                <span>৫. রিসেট পাসওয়ার্ড</span>
+                <span class="text-[10px] text-slate-400">↗</span>
+              </a>
+              <a href="lock-screen.html" class="flex items-center justify-between py-1.5 px-2.5 text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded-lg transition-colors">
+                <span>৬. লক স্ক্রিন (Lock Screen)</span>
+                <span class="text-[10px] text-slate-400">↗</span>
+              </a>
+            </div>
+          </div>
+
+        </nav>
+
+        <!-- Sidebar Footer (User Account Mini Card) -->
+        <div class="p-3 border-t border-slate-100 dark:border-slate-800 shrink-0">
+          <div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar" class="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-500/30 shrink-0" />
+            <div x-show="!sidebarCollapsed" class="flex-1 truncate">
+              <p class="text-xs font-semibold text-slate-900 dark:text-white truncate leading-tight">মোঃ ইমরান হোসেন</p>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">Super Admin</p>
+            </div>
+            <button x-show="!sidebarCollapsed" @click="toggleDarkMode()" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400" title="Toggle Theme">
+              <svg class="w-4 h-4"><use :href="darkMode ? '#icon-sun' : '#icon-moon'"/></svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ================================================================= -->
+      <!-- 2. MAIN CONTENT WRAPPER & TOP HEADER                              -->
+      <!-- ================================================================= -->
+      <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-slate-50/50 dark:bg-slate-950">
+
+        <!-- Top Header Bar -->
+        <header id="top-header" class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4 z-30 shrink-0">
+          
+          <!-- Left Header: Sidebar Toggle Button & Title/Breadcrumb -->
+          <div class="flex items-center gap-3">
+            <!-- Universal Sidebar Toggle (Works on both mobile and desktop) -->
+            <button 
+              @click="toggleSidebar()" 
+              class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-hidden"
+              title="Toggle Sidebar (Show / Hide)"
+            >
+              <svg class="w-5 h-5"><use href="#icon-menu"/></svg>
+            </button>
+
+            <!-- Breadcrumb / Active Page Indicator -->
+            <div class="hidden sm:flex items-center text-sm font-medium text-slate-500 dark:text-slate-400">
+              <span class="text-slate-400 dark:text-slate-500">হোম</span>
+              <svg class="w-4 h-4 mx-1.5"><use href="#icon-chevron-right"/></svg>
+              <span class="font-semibold text-slate-900 dark:text-white capitalize" x-text="currentView === 'dashboard' ? 'ড্যাশবোর্ড ওভারভিউ' : (currentView === 'table' ? 'ডাটা টেবিল ভিউ' : 'কমপ্রিহেনসিভ ফর্ম')"></span>
+            </div>
+          </div>
+
+          <!-- Middle Header: Search Input -->
+          <div class="flex-1 max-w-md hidden md:block">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                <svg class="w-4 h-4"><use href="#icon-search"/></svg>
+              </span>
+              <input 
+                type="text" 
+                placeholder="দ্রুত সার্চ করুন... (Ctrl + K)" 
+                class="w-full pl-9 pr-12 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-200 placeholder-slate-400 transition-all"
+                @keydown.window.ctrl.k.prevent="$el.focus()"
+              />
+              <span class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                <kbd class="px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-slate-200/70 dark:bg-slate-700 rounded-md border border-slate-300 dark:border-slate-600">⌘K</kbd>
+              </span>
+            </div>
+          </div>
+
+          <!-- Right Header: Actions, Notifications, Dark Mode, Profile -->
+          <div class="flex items-center gap-1.5 sm:gap-2.5">
+
+            <!-- Quick Action / Theme Color Settings Button -->
+            <div class="relative" x-data="{ open: false }">
+              <button 
+                @click="open = !open" 
+                @click.outside="open = false" 
+                class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                title="লগো ও থিম কালার সিলেক্টর"
+              >
+                <svg class="w-5 h-5"><use href="#icon-palette"/></svg>
+              </button>
+
+              <!-- Theme Picker Dropdown -->
+              <div 
+                x-show="open" 
+                x-transition:enter="transition ease-out duration-150"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-100"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                class="absolute right-0 mt-2 w-64 p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 animate-dropdown"
+              >
+                <p class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">লগো থিম কালার নির্বাচন করুন</p>
+                <div class="grid grid-cols-5 gap-2">
+                  <template x-for="(color, key) in themeColors" :key="key">
+                    <button 
+                      @click="setTheme(key); open = false"
+                      :style="{ backgroundColor: color.primary }"
+                      class="h-8 rounded-lg flex items-center justify-center text-white shadow-sm ring-2 transition-all hover:scale-105"
+                      :class="currentTheme === key ? 'ring-offset-2 ring-slate-900 dark:ring-white scale-105' : 'ring-transparent'"
+                      :title="color.name"
+                    >
+                      <svg x-show="currentTheme === key" class="w-4 h-4"><use href="#icon-check"/></svg>
+                    </button>
+                  </template>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500">
+                  নির্বাচিত থিম: <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="themeColors[currentTheme].name"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dark / Light Mode Toggle Button -->
+            <button 
+              @click="toggleDarkMode()" 
+              class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              :title="darkMode ? 'লাইট মোড অন করুন' : 'ডার্ক মোড অন করুন'"
+            >
+              <svg class="w-5 h-5"><use :href="darkMode ? '#icon-sun' : '#icon-moon'"/></svg>
+            </button>
+
+            <!-- Notifications Dropdown -->
+            <div class="relative" x-data="{ notifOpen: false }">
+              <button 
+                @click="notifOpen = !notifOpen" 
+                @click.outside="notifOpen = false" 
+                class="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                title="নোটিফিকেশন"
+              >
+                <svg class="w-5 h-5"><use href="#icon-bell"/></svg>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900"></span>
+              </button>
+
+              <!-- Notifications Menu -->
+              <div 
+                x-show="notifOpen" 
+                x-transition
+                class="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden animate-dropdown"
+              >
+                <div class="p-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-sm text-slate-900 dark:text-white">নোটিফিকেশন</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-full">3টি নতুন</span>
+                  </div>
+                  <button @click="showToast('Notifications', 'All marked as read'); notifOpen = false" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">মার্ক রিড</button>
+                </div>
+                <div class="divide-y divide-slate-100 dark:divide-slate-800/80 max-h-72 overflow-y-auto">
+                  <template x-for="item in notifications" :key="item.id">
+                    <div class="p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer flex items-start gap-3">
+                      <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg class="w-4 h-4"><use href="#icon-bell"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate" x-text="item.title"></p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1" x-text="item.desc"></p>
+                        <span class="text-[10px] text-slate-400 mt-1 block" x-text="item.time"></span>
+                      </div>
+                      <span x-show="item.unread" class="w-1.5 h-1.5 rounded-full bg-indigo-600 mt-2 shrink-0"></span>
+                    </div>
+                  </template>
+                </div>
+                <div class="p-2.5 text-center bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
+                  <button @click="notifOpen = false" class="text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600">সব নোটিফিকেশন দেখুন</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shop Showcase Quick Launch Button -->
+            <a 
+              href="home.html" 
+              class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 font-semibold text-xs transition-colors border border-indigo-200/60 dark:border-indigo-900/40"
+              title="প্রোডাক্ট শোকেস হোমপেজ প্রিভিউ করুন"
+            >
+              <svg class="w-3.5 h-3.5"><use href="#icon-cart"/></svg>
+              <span>শপ শোকেস ↗</span>
+            </a>
+
+            <!-- Vertical Divider -->
+            <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+
+            <!-- User Profile Dropdown -->
+            <div class="relative" x-data="{ userOpen: false }">
+              <button 
+                @click="userOpen = !userOpen" 
+                @click.outside="userOpen = false"
+                class="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-hidden"
+              >
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar" class="w-8 h-8 rounded-full object-cover ring-2 ring-indigo-500/30" />
+                <span class="hidden sm:inline-block text-xs font-semibold text-slate-800 dark:text-slate-200">ইমরান হোসাইন</span>
+                <svg class="w-3.5 h-3.5 text-slate-400 hidden sm:inline-block"><use href="#icon-chevron-down"/></svg>
+              </button>
+
+              <!-- Profile Dropdown Menu -->
+              <div 
+                x-show="userOpen" 
+                x-transition 
+                class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-dropdown"
+              >
+                <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                  <p class="text-xs font-bold text-slate-900 dark:text-white">Md. Imran Hossain</p>
+                  <p class="text-[11px] text-slate-400 truncate">mdimranhossaingd@gmail.com</p>
+                </div>
+                <a href="home.html" class="flex items-center gap-2.5 px-4 py-2 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 font-semibold">
+                  <svg class="w-4 h-4"><use href="#icon-cart"/></svg>
+                  প্রোডাক্ট শোকেস হোমপেজ ↗
+                </a>
+                <a href="product.html" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium">
+                  <svg class="w-4 h-4 text-slate-400"><use href="#icon-sparkles"/></svg>
+                  প্রোডাক্ট বিবরণ পেজ (PDP) ↗
+                </a>
+                <a href="#" @click.prevent="switchView('form'); userOpen = false" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <svg class="w-4 h-4 text-slate-400"><use href="#icon-form"/></svg>
+                  আমার প্রোফাইল এডিট
+                </a>
+                <a href="#" @click.prevent="switchView('table'); userOpen = false" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <svg class="w-4 h-4 text-slate-400"><use href="#icon-table"/></svg>
+                  ডাটা লিস্ট ম্যানেজমেন্ট
+                </a>
+                <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+                <a href="lock-screen.html" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <svg class="w-4 h-4 text-slate-400"><use href="#icon-lock"/></svg>
+                  স্ক্রিন লক করুন (Lock Screen)
+                </a>
+                <a href="login.html" class="flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40">
+                  <svg class="w-4 h-4"><use href="#icon-x"/></svg>
+                  লগ আউট করুন (Sign Out)
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+        </header>
+
+        <!-- ================================================================= -->
+        <!-- 3. SCROLLABLE MAIN CONTENT BODY (Dynamic Views)                   -->
+        <!-- ================================================================= -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+
+          <!-- VIEW 1: DASHBOARD OVERVIEW -->
+          <div x-show="currentView === 'dashboard'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6 max-w-7xl mx-auto">
+            
+            <!-- Welcome Banner -->
+            <div class="p-6 rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white shadow-xl shadow-indigo-600/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight">স্বাগতম, মোঃ ইমরান হোসেন! 👋</h1>
+                <p class="text-sm text-indigo-100 mt-1 max-w-xl">আপনার এডমিন ড্যাশবোর্ড প্যানেল সম্পূর্ণ প্রস্তুত। সাইডবার, সমৃদ্ধ ডাটা টেবিল এবং সকল ফিচারযুক্ত ফর্ম পেজ এক্সপ্লোর করুন।</p>
+              </div>
+              <div class="flex items-center gap-2.5 shrink-0">
+                <button @click="switchView('table')" class="px-4 py-2 text-xs font-semibold bg-white text-indigo-700 rounded-xl hover:bg-indigo-50 shadow-sm transition-colors">
+                  ডাটা টেবিল দেখুন
+                </button>
+                <button @click="switchView('form')" class="px-4 py-2 text-xs font-semibold bg-indigo-500/40 hover:bg-indigo-500/60 text-white border border-white/20 rounded-xl transition-colors">
+                  + নতুন ফর্ম এন্ট্রি
+                </button>
+              </div>
+            </div>
+
+            <!-- Modern Authentication Suite Quick Access Card -->
+            <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <svg class="w-4 h-4"><use href="#icon-lock"/></svg>
+                  </div>
+                  <div>
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>মডার্ণ অথেন্টিকেশন স্যুট (Modern Authentication Pages)</span>
+                      <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full">৬টি পেজ প্রস্তুত</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">নিচের লিংকগুলোতে ক্লিক করে অথেন্টিকেশন পেজগুলো প্রিভিউ করুন:</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Launch Pills -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                <a href="login.html" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+                  <div class="truncate">
+                    <span class="text-xs font-semibold block truncate">১. Login</span>
+                    <span class="text-[10px] text-slate-400 block">লগইন পেজ</span>
+                  </div>
+                  <span class="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5 text-xs">↗</span>
+                </a>
+
+                <a href="register.html" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+                  <div class="truncate">
+                    <span class="text-xs font-semibold block truncate">২. Register</span>
+                    <span class="text-[10px] text-slate-400 block">রেজিস্ট্রেশন</span>
+                  </div>
+                  <span class="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5 text-xs">↗</span>
+                </a>
+
+                <a href="forgot-password.html" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+                  <div class="truncate">
+                    <span class="text-xs font-semibold block truncate">৩. Forgot Pass</span>
+                    <span class="text-[10px] text-slate-400 block">রিকভারি কোড</span>
+                  </div>
+                  <span class="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5 text-xs">↗</span>
+                </a>
+
+                <a href="otp.html" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+                  <div class="truncate">
+                    <span class="text-xs font-semibold block truncate">৪. OTP 2FA</span>
+                    <span class="text-[10px] text-slate-400 block">২-ধাপ ভেরিফাই</span>
+                  </div>
+                  <span class="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5 text-xs">↗</span>
+                </a>
+
+                <a href="reset-password.html" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+                  <div class="truncate">
+                    <span class="text-xs font-semibold block truncate">৫. Reset Pass</span>
+                    <span class="text-[10px] text-slate-400 block">নতুন পাসওয়ার্ড</span>
+                  </div>
+                  <span class="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5 text-xs">↗</span>
+                </a>
+
+                <a href="lock-screen.html" class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group">
+                  <div class="truncate">
+                    <span class="text-xs font-semibold block truncate">৬. Lock Screen</span>
+                    <span class="text-[10px] text-slate-400 block">লাইভ ক্লক ও পিন</span>
+                  </div>
+                  <span class="text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5 text-xs">↗</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- KPI Metric Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              
+              <!-- Metric 1: Total Revenue -->
+              <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-500 dark:text-slate-400">মোট বিক্রয় (Revenue)</span>
+                  <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <svg class="w-5 h-5"><use href="#icon-cart"/></svg>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <p class="text-2xl font-bold text-slate-900 dark:text-white">৳ ১২,৮৪,৫০০</p>
+                  <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">
+                    <span>↑ +১৪.২%</span>
+                    <span class="text-slate-400 font-normal">গত মাসের তুলনায়</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metric 2: Total Users -->
+              <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-500 dark:text-slate-400">মোট ইউজার সংখ্যা</span>
+                  <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <svg class="w-5 h-5"><use href="#icon-users"/></svg>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <p class="text-2xl font-bold text-slate-900 dark:text-white">২,৪৮০ জন</p>
+                  <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">
+                    <span>↑ +৮.৭%</span>
+                    <span class="text-slate-400 font-normal">নতুন রেজিস্ট্রেশন</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metric 3: Active Orders -->
+              <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-500 dark:text-slate-400">সক্রিয় অর্ডার সমূহ</span>
+                  <div class="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center">
+                    <svg class="w-5 h-5"><use href="#icon-table"/></svg>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <p class="text-2xl font-bold text-slate-900 dark:text-white">৩১৮ টি</p>
+                  <div class="flex items-center gap-1 text-xs text-amber-500 mt-1 font-semibold">
+                    <span>⏳ ২৫ টি পেন্ডিং</span>
+                    <span class="text-slate-400 font-normal">প্রসেসিং হচ্ছে</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metric 4: Conversion Rate -->
+              <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-500 dark:text-slate-400">কনভার্সন রেট</span>
+                  <div class="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+                    <svg class="w-5 h-5"><use href="#icon-chart"/></svg>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <p class="text-2xl font-bold text-slate-900 dark:text-white">৩.৭৫%</p>
+                  <div class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">
+                    <span>↑ +১.১%</span>
+                    <span class="text-slate-400 font-normal">লক্ষ্যমাত্রার উপরে</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Charts & Activity Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              <!-- Visual Analytics Bar Chart Card (Pure CSS/SVG, fast & zero-dependency) -->
+              <div class="lg:col-span-2 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                  <div>
+                    <h3 class="font-bold text-base text-slate-900 dark:text-white">মাসিক বিক্রয় ও ভিজিটর এনালাইটিক্স</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">গত ৬ মাসের পারফরম্যান্স স্ট্যাটিসটিক্স</p>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-medium">
+                    <button class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 shadow-xs text-indigo-600 dark:text-white">মাসিক</button>
+                    <button class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white">সাপ্তাহিক</button>
+                  </div>
+                </div>
+
+                <!-- Interactive SVG Analytics Chart -->
+                <div class="mt-6 h-60 flex items-end justify-between gap-2 sm:gap-6 pt-6">
+                  <!-- Jan -->
+                  <div class="flex-1 flex flex-col items-center gap-2 group">
+                    <div class="w-full max-w-[42px] bg-slate-100 dark:bg-slate-800 rounded-xl h-48 flex items-end p-1">
+                      <div class="w-full bg-indigo-500 group-hover:bg-indigo-600 rounded-lg transition-all duration-300" style="height: 55%"></div>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-500">জানু</span>
+                  </div>
+                  <!-- Feb -->
+                  <div class="flex-1 flex flex-col items-center gap-2 group">
+                    <div class="w-full max-w-[42px] bg-slate-100 dark:bg-slate-800 rounded-xl h-48 flex items-end p-1">
+                      <div class="w-full bg-indigo-500 group-hover:bg-indigo-600 rounded-lg transition-all duration-300" style="height: 70%"></div>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-500">ফেব্রু</span>
+                  </div>
+                  <!-- Mar -->
+                  <div class="flex-1 flex flex-col items-center gap-2 group">
+                    <div class="w-full max-w-[42px] bg-slate-100 dark:bg-slate-800 rounded-xl h-48 flex items-end p-1">
+                      <div class="w-full bg-indigo-500 group-hover:bg-indigo-600 rounded-lg transition-all duration-300" style="height: 45%"></div>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-500">মার্চ</span>
+                  </div>
+                  <!-- Apr -->
+                  <div class="flex-1 flex flex-col items-center gap-2 group">
+                    <div class="w-full max-w-[42px] bg-slate-100 dark:bg-slate-800 rounded-xl h-48 flex items-end p-1">
+                      <div class="w-full bg-indigo-500 group-hover:bg-indigo-600 rounded-lg transition-all duration-300" style="height: 85%"></div>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-500">এপ্রিল</span>
+                  </div>
+                  <!-- May -->
+                  <div class="flex-1 flex flex-col items-center gap-2 group">
+                    <div class="w-full max-w-[42px] bg-slate-100 dark:bg-slate-800 rounded-xl h-48 flex items-end p-1">
+                      <div class="w-full bg-indigo-500 group-hover:bg-indigo-600 rounded-lg transition-all duration-300" style="height: 65%"></div>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-500">মে</span>
+                  </div>
+                  <!-- Jun (Active High) -->
+                  <div class="flex-1 flex flex-col items-center gap-2 group">
+                    <div class="w-full max-w-[42px] bg-slate-100 dark:bg-slate-800 rounded-xl h-48 flex items-end p-1">
+                      <div class="w-full bg-gradient-to-t from-indigo-600 to-cyan-400 rounded-lg shadow-md transition-all duration-300" style="height: 95%"></div>
+                    </div>
+                    <span class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">জুন 🔥</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Action & Recent System Status Card -->
+              <div class="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between">
+                <div>
+                  <h3 class="font-bold text-base text-slate-900 dark:text-white">কুইক একশন ও শর্টকাট</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">সহজে কাজের জন্য প্রয়োজনীয় লিংক</p>
+                  
+                  <div class="mt-4 space-y-2.5">
+                    <button @click="switchView('form')" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/60 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                      <span class="flex items-center gap-2.5">
+                        <span class="p-1.5 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 rounded-lg"><svg class="w-4 h-4"><use href="#icon-plus"/></svg></span>
+                        নতুন ইউজার প্রোফাইল তৈরি
+                      </span>
+                      <svg class="w-4 h-4 text-slate-400"><use href="#icon-chevron-right"/></svg>
+                    </button>
+
+                    <button @click="switchView('table')" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/60 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                      <span class="flex items-center gap-2.5">
+                        <span class="p-1.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-lg"><svg class="w-4 h-4"><use href="#icon-table"/></svg></span>
+                        সকল ইউজার ডাটা এক্সপোর্ট (CSV)
+                      </span>
+                      <svg class="w-4 h-4 text-slate-400"><use href="#icon-chevron-right"/></svg>
+                    </button>
+
+                    <button @click="toggleDarkMode()" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-amber-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700/60 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                      <span class="flex items-center gap-2.5">
+                        <span class="p-1.5 bg-amber-100 dark:bg-amber-950 text-amber-600 rounded-lg"><svg class="w-4 h-4"><use href="#icon-moon"/></svg></span>
+                        থিম ও নাইট মোড পরিবর্তন
+                      </span>
+                      <svg class="w-4 h-4 text-slate-400"><use href="#icon-chevron-right"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Server Live Pill -->
+                <div class="mt-6 p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="relative flex h-2.5 w-2.5">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-xs font-semibold text-emerald-800 dark:text-emerald-300">সিস্টেম স্ট্যাটাস: অপটিমাল</span>
+                  </div>
+                  <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">99.9% Uptime</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- VIEW 2: FULL FEATURED DATA TABLE -->
+          <div x-show="currentView === 'table'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-5 max-w-7xl mx-auto">
+            
+            <!-- Table Header Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">ইউজার ডাটা টেবিল (Full Data Table)</h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">সার্চ, ফিল্টারিং, সর্টিং, পেজিনেশন ও বাল্ক একশনযুক্ত সমৃদ্ধ টেবিল।</p>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button @click="bulkExport()" :disabled="!selectedRows.length" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-xs">
+                  <svg class="w-4 h-4"><use href="#icon-download"/></svg>
+                  <span>এক্সপোর্ট CSV</span>
+                </button>
+                <button @click="openAddUserModal()" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-600/20 transition-all">
+                  <svg class="w-4 h-4"><use href="#icon-plus"/></svg>
+                  <span>+ নতুন ইউজার যোগ করুন</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Table Filter Toolbar -->
+            <div class="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+              
+              <!-- Search Box -->
+              <div class="w-full md:w-80 relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4"><use href="#icon-search"/></svg>
+                </span>
+                <input 
+                  type="text" 
+                  x-model="tableSearch" 
+                  placeholder="নাম, ইমেইল অথবা রোল দিয়ে খুঁজুন..." 
+                  class="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 placeholder-slate-400"
+                />
+              </div>
+
+              <!-- Filter Controls -->
+              <div class="w-full md:w-auto flex flex-wrap items-center gap-2.5">
+                
+                <!-- Status Filter -->
+                <select x-model="statusFilter" class="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500">
+                  <option value="all">সকল স্ট্যাটাস (All)</option>
+                  <option value="active">Active (সক্রিয়)</option>
+                  <option value="pending">Pending (পেন্ডিং)</option>
+                  <option value="inactive">Inactive (নিষ্ক্রিয়)</option>
+                </select>
+
+                <!-- Role Filter -->
+                <select x-model="roleFilter" class="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500">
+                  <option value="all">সকল রোল (All Roles)</option>
+                  <option value="super admin">Super Admin</option>
+                  <option value="manager">Manager</option>
+                  <option value="developer">Developer</option>
+                  <option value="designer">Designer</option>
+                  <option value="editor">Editor</option>
+                  <option value="member">Member</option>
+                </select>
+
+                <!-- Rows per page selector -->
+                <select x-model.number="rowsPerPage" class="px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500">
+                  <option value="5">প্রতি পেজে ৫টি</option>
+                  <option value="10">প্রতি পেজে ১০টি</option>
+                  <option value="20">প্রতি পেজে ২০টি</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Floating Bulk Action Bar (Appears dynamically when items are selected) -->
+            <div 
+              x-show="selectedRows.length > 0" 
+              x-transition 
+              class="p-3 bg-indigo-900 text-white rounded-xl shadow-xl flex items-center justify-between gap-4"
+            >
+              <div class="flex items-center gap-3 text-xs font-semibold pl-2">
+                <span class="w-6 h-6 rounded-full bg-indigo-700 flex items-center justify-center text-[11px]" x-text="selectedRows.length"></span>
+                <span>টি আইটেম সিলেক্ট করা হয়েছে</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button @click="bulkExport()" class="px-3 py-1.5 text-xs font-medium bg-indigo-700 hover:bg-indigo-600 rounded-lg transition-colors">
+                  ডাউনলোড করুন
+                </button>
+                <button @click="bulkDelete()" class="px-3 py-1.5 text-xs font-medium bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors">
+                  মুছে ফেলুন (Delete)
+                </button>
+              </div>
+            </div>
+
+            <!-- Responsive Table Container -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                  
+                  <!-- Table Head -->
+                  <thead class="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <tr>
+                      <!-- Select All Checkbox -->
+                      <th class="py-3.5 px-4 w-10">
+                        <input 
+                          type="checkbox" 
+                          :checked="allSelectedOnPage" 
+                          @change="toggleSelectAll()" 
+                          class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 dark:bg-slate-800 cursor-pointer"
+                        />
+                      </th>
+
+                      <!-- Sortable: ID -->
+                      <th @click="sortBy('id')" class="py-3.5 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white select-none">
+                        <div class="flex items-center gap-1.5">
+                          <span>আইডি</span>
+                          <span class="text-slate-400 text-xs" x-show="sortColumn === 'id'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                        </div>
+                      </th>
+
+                      <!-- Sortable: User Info -->
+                      <th @click="sortBy('name')" class="py-3.5 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white select-none">
+                        <div class="flex items-center gap-1.5">
+                          <span>ইউজার তথ্য (Name & Email)</span>
+                          <span class="text-slate-400 text-xs" x-show="sortColumn === 'name'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                        </div>
+                      </th>
+
+                      <!-- Sortable: Role -->
+                      <th @click="sortBy('role')" class="py-3.5 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white select-none">
+                        <div class="flex items-center gap-1.5">
+                          <span>রোল / পদবী</span>
+                          <span class="text-slate-400 text-xs" x-show="sortColumn === 'role'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                        </div>
+                      </th>
+
+                      <!-- Sortable: Status -->
+                      <th @click="sortBy('status')" class="py-3.5 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white select-none">
+                        <div class="flex items-center gap-1.5">
+                          <span>স্ট্যাটাস</span>
+                          <span class="text-slate-400 text-xs" x-show="sortColumn === 'status'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                        </div>
+                      </th>
+
+                      <!-- Sortable: Orders -->
+                      <th @click="sortBy('orders')" class="py-3.5 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white select-none">
+                        <div class="flex items-center gap-1.5">
+                          <span>অর্ডার সংখ্যা</span>
+                          <span class="text-slate-400 text-xs" x-show="sortColumn === 'orders'" x-text="sortDirection === 'asc' ? '↑' : '↓'"></span>
+                        </div>
+                      </th>
+
+                      <!-- Spent -->
+                      <th class="py-3.5 px-4">মোট লেনদেন</th>
+
+                      <!-- Action Buttons -->
+                      <th class="py-3.5 px-4 text-right">একশন (Actions)</th>
+                    </tr>
+                  </thead>
+
+                  <!-- Table Body -->
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                    
+                    <template x-for="user in paginatedUsers" :key="user.id">
+                      <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors" :class="{'bg-indigo-50/40 dark:bg-indigo-950/20': selectedRows.includes(user.id)}">
+                        
+                        <!-- Row Checkbox -->
+                        <td class="py-3.5 px-4">
+                          <input 
+                            type="checkbox" 
+                            :checked="selectedRows.includes(user.id)" 
+                            @change="toggleRowSelection(user.id)" 
+                            class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 dark:bg-slate-800 cursor-pointer"
+                          />
+                        </td>
+
+                        <!-- ID Badge -->
+                        <td class="py-3.5 px-4 font-mono font-medium text-xs text-slate-500" x-text="'#' + user.id"></td>
+
+                        <!-- Avatar + Name + Email -->
+                        <td class="py-3.5 px-4">
+                          <div class="flex items-center gap-3">
+                            <img :src="user.avatar" alt="Avatar" class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0" />
+                            <div class="min-w-0">
+                              <p class="font-semibold text-slate-900 dark:text-white truncate" x-text="user.name"></p>
+                              <p class="text-xs text-slate-400 truncate" x-text="user.email"></p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <!-- Role -->
+                        <td class="py-3.5 px-4">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200" x-text="user.role"></span>
+                        </td>
+
+                        <!-- Status Pill -->
+                        <td class="py-3.5 px-4">
+                          <span 
+                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                            :class="{
+                              'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400': user.status.toLowerCase() === 'active',
+                              'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400': user.status.toLowerCase() === 'pending',
+                              'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400': user.status.toLowerCase() === 'inactive'
+                            }"
+                          >
+                            <span class="w-1.5 h-1.5 rounded-full" :class="{
+                              'bg-emerald-500': user.status.toLowerCase() === 'active',
+                              'bg-amber-500': user.status.toLowerCase() === 'pending',
+                              'bg-slate-400': user.status.toLowerCase() === 'inactive'
+                            }"></span>
+                            <span x-text="user.status"></span>
+                          </span>
+                        </td>
+
+                        <!-- Orders -->
+                        <td class="py-3.5 px-4 font-semibold text-slate-900 dark:text-white" x-text="user.orders + ' টি'"></td>
+
+                        <!-- Spent -->
+                        <td class="py-3.5 px-4 font-mono font-medium text-slate-600 dark:text-slate-300" x-text="user.spent"></td>
+
+                        <!-- Actions: Edit, Delete -->
+                        <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                          <div class="inline-flex items-center gap-1">
+                            <button 
+                              @click="openEditUserModal(user)" 
+                              class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
+                              title="এডিট করুন"
+                            >
+                              <svg class="w-4 h-4"><use href="#icon-pencil"/></svg>
+                            </button>
+                            <button 
+                              @click="deleteUser(user.id)" 
+                              class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 transition-colors"
+                              title="মুছে ফেলুন"
+                            >
+                              <svg class="w-4 h-4"><use href="#icon-trash"/></svg>
+                            </button>
+                          </div>
+                        </td>
+
+                      </tr>
+                    </template>
+
+                    <!-- Empty State -->
+                    <tr x-show="filteredUsers.length === 0">
+                      <td colspan="8" class="py-12 text-center text-slate-400">
+                        <svg class="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-slate-700"><use href="#icon-search"/></svg>
+                        <p class="text-sm font-semibold">কোনো ইউজার ডাটা পাওয়া যায়নি</p>
+                        <p class="text-xs text-slate-400 mt-1">সার্চ ফিল্টার পরিবর্তন করে পুনরায় চেষ্টা করুন</p>
+                      </td>
+                    </tr>
+
+                  </tbody>
+
+                </table>
+              </div>
+
+              <!-- Pagination Footer -->
+              <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                <div>
+                  মোট <span class="font-bold text-slate-900 dark:text-white" x-text="filteredUsers.length"></span> টির মধ্যে 
+                  <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="filteredUsers.length ? ((currentPage - 1) * rowsPerPage + 1) : 0"></span> - 
+                  <span class="font-semibold text-slate-800 dark:text-slate-200" x-text="Math.min(currentPage * rowsPerPage, filteredUsers.length)"></span> প্রদর্শন করা হচ্ছে
+                </div>
+
+                <!-- Page Navigation Buttons -->
+                <div class="flex items-center gap-1.5">
+                  <button 
+                    @click="currentPage = Math.max(1, currentPage - 1)" 
+                    :disabled="currentPage === 1"
+                    class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <svg class="w-4 h-4"><use href="#icon-chevron-left"/></svg>
+                  </button>
+
+                  <template x-for="p in totalPages" :key="p">
+                    <button 
+                      @click="currentPage = p"
+                      class="w-8 h-8 rounded-lg text-xs font-semibold transition-colors"
+                      :class="currentPage === p ? 'bg-indigo-600 text-white' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'"
+                      x-text="p"
+                    ></button>
+                  </template>
+
+                  <button 
+                    @click="currentPage = Math.min(totalPages, currentPage + 1)" 
+                    :disabled="currentPage === totalPages"
+                    class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <svg class="w-4 h-4"><use href="#icon-chevron-right"/></svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- VIEW 3: COMPREHENSIVE FORM (All Input Features) -->
+          <div x-show="currentView === 'form'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-6 max-w-5xl mx-auto">
+            
+            <!-- Form Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">অল-ফিচার ফর্ম (Comprehensive Form)</h1>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">সব ধরনের ইনপুট, ড্রপডাউন, ট্যাগস, ফাইল আপলোড ও ভ্যালিডেশনযুক্ত ফর্ম।</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" @click="resetForm()" class="px-3.5 py-2 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                  রিসেট (Reset)
+                </button>
+                <button type="button" @click="submitForm()" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-600/20 transition-all">
+                  সাবমিট করুন
+                </button>
+              </div>
+            </div>
+
+            <!-- Main Form Card -->
+            <form @submit.prevent="submitForm()" class="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-8">
+              
+              <!-- Section 1: Personal Details -->
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">১. ব্যাক্তিগত তথ্য (Personal Information)</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- First Name -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">প্রথম নাম (First Name) *</label>
+                    <input 
+                      type="text" 
+                      x-model="form.firstName" 
+                      placeholder="যেমন: মোঃ ইমরান" 
+                      class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 transition-all"
+                      :class="formErrors.firstName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-700'"
+                    />
+                    <p x-show="formErrors.firstName" class="text-xs text-rose-500 mt-1" x-text="formErrors.firstName"></p>
+                  </div>
+
+                  <!-- Last Name -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">শেষ নাম (Last Name) *</label>
+                    <input 
+                      type="text" 
+                      x-model="form.lastName" 
+                      placeholder="যেমন: হোসেন" 
+                      class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 transition-all"
+                      :class="formErrors.lastName ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-700'"
+                    />
+                    <p x-show="formErrors.lastName" class="text-xs text-rose-500 mt-1" x-text="formErrors.lastName"></p>
+                  </div>
+
+                  <!-- Email Address -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">ইমেইল ঠিকানা (Email) *</label>
+                    <input 
+                      type="email" 
+                      x-model="form.email" 
+                      placeholder="name@example.com" 
+                      class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 transition-all"
+                      :class="formErrors.email ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-700'"
+                    />
+                    <p x-show="formErrors.email" class="text-xs text-rose-500 mt-1" x-text="formErrors.email"></p>
+                  </div>
+
+                  <!-- Phone Number -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">ফোন নম্বর (Phone) *</label>
+                    <input 
+                      type="tel" 
+                      x-model="form.phone" 
+                      placeholder="+880 1712 345678" 
+                      class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 transition-all"
+                      :class="formErrors.phone ? 'border-rose-500 bg-rose-50/30' : 'border-slate-200 dark:border-slate-700'"
+                    />
+                    <p x-show="formErrors.phone" class="text-xs text-rose-500 mt-1" x-text="formErrors.phone"></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: Role, Department & Date -->
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">২. পদবী ও ডিপার্টমেন্ট (Role & Department)</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <!-- Select Dropdown: Role -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">নিযুক্ত পদবী (Role)</label>
+                    <select x-model="form.role" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
+                      <option value="Administrator">Administrator</option>
+                      <option value="Project Manager">Project Manager</option>
+                      <option value="Senior Developer">Senior Developer</option>
+                      <option value="UI/UX Designer">UI/UX Designer</option>
+                      <option value="QA Engineer">QA Engineer</option>
+                    </select>
+                  </div>
+
+                  <!-- Select Dropdown: Department -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">ডিপার্টমেন্ট (Department)</label>
+                    <select x-model="form.department" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
+                      <option value="Technology">Technology (টেক)</option>
+                      <option value="Design">Design & Creative</option>
+                      <option value="Sales">Sales & Marketing</option>
+                      <option value="Human Resource">Human Resource (HR)</option>
+                    </select>
+                  </div>
+
+                  <!-- Date Picker Input -->
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">জন্মতারিখ (Birth Date)</label>
+                    <input 
+                      type="date" 
+                      x-model="form.birthDate" 
+                      class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 3: Interactive Skills Multi-Tag Input -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">স্কিলস ও ট্যাগস (Interactive Multi-Tags Input)</label>
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-2xl">
+                  
+                  <!-- Tag Chips List -->
+                  <div class="flex flex-wrap items-center gap-1.5 mb-2.5">
+                    <template x-for="(skill, idx) in form.skills" :key="idx">
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs font-semibold">
+                        <span x-text="skill"></span>
+                        <button type="button" @click="removeTag(idx)" class="hover:text-rose-600 focus:outline-hidden">
+                          <svg class="w-3 h-3"><use href="#icon-x"/></svg>
+                        </button>
+                      </span>
+                    </template>
+                  </div>
+
+                  <!-- Tag Input Field -->
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      x-model="newTagInput" 
+                      @keydown.enter.prevent="addTag()" 
+                      placeholder="ট্যাগ লিখে Enter অথবা 'যোগ করুন' চাপুন..." 
+                      class="flex-1 px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
+                    />
+                    <button type="button" @click="addTag()" class="px-3 py-1.5 text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-300 transition-colors">
+                      যোগ করুন
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 4: Textarea with Character Counter -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">বায়োগ্রাফি / বিবরণ (Bio & Details)</label>
+                  <span class="text-[11px] text-slate-400 font-mono" x-text="(form.bio ? form.bio.length : 0) + '/300 অক্ষর'"></span>
+                </div>
+                <textarea 
+                  x-model="form.bio" 
+                  maxlength="300"
+                  rows="3" 
+                  placeholder="আপনার কাজের অভিজ্ঞতা এবং সংক্ষিপ্ত বিবরণ এখানে লিখুন..."
+                  class="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200"
+                ></textarea>
+              </div>
+
+              <!-- Section 5: Drag & Drop File Upload with Preview -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">ফাইল ও ছবি আপলোড (Drag & Drop File Upload with Preview)</label>
+                
+                <div 
+                  class="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-indigo-500 transition-colors bg-slate-50/50 dark:bg-slate-800/30"
+                  @dragover.prevent=""
+                  @drop.prevent="handleFileUpload($event)"
+                >
+                  <!-- If File Preview exists -->
+                  <div x-show="form.avatarPreview" class="flex flex-col items-center gap-3">
+                    <img :src="form.avatarPreview" alt="Upload Preview" class="w-24 h-24 rounded-2xl object-cover ring-4 ring-indigo-500/20 shadow-md" />
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-medium text-slate-600 dark:text-slate-300" x-text="form.avatarFile ? form.avatarFile.name : 'ছবি সিলেক্টেড'"></span>
+                      <button type="button" @click="removeUploadedFile()" class="p-1 text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-md">
+                        <svg class="w-4 h-4"><use href="#icon-trash"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- If No File Preview -->
+                  <div x-show="!form.avatarPreview">
+                    <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center mb-3">
+                      <svg class="w-6 h-6"><use href="#icon-upload"/></svg>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">ছবি টেনে এনে ড্রপ করুন অথবা ব্রাউজ করুন</p>
+                    <p class="text-xs text-slate-400 mt-1">PNG, JPG, WebP সর্বোচ্চ 2MB সাইজ</p>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      @change="handleFileUpload($event)" 
+                      class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 6: Radio Buttons, Checkboxes & Toggle Switches -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                
+                <!-- Radio Group: Work Shift -->
+                <div class="space-y-3">
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">কাজের শিফট (Radio Buttons)</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input type="radio" name="shift" value="morning" x-model="form.workShift" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                      <span>মর্নিং শিফট (০৯:০০ AM - ০৫:০০ PM)</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input type="radio" name="shift" value="evening" x-model="form.workShift" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                      <span>ইভনিং শিফট (০২:০০ PM - ১০:০০ PM)</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input type="radio" name="shift" value="remote" x-model="form.workShift" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                      <span>রিমোট / ফ্লেক্সিবল ওয়ার্ক</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Checkbox Group: Notifications -->
+                <div class="space-y-3">
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">অ্যালার্ট পছন্দ (Checkboxes)</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input type="checkbox" x-model="form.notificationsEmail" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                      <span>ইমেইল নোটিফিকেশন পান</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input type="checkbox" x-model="form.notificationsSms" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                      <span>এসএমএস সিকিউরিটি অ্যালার্ট</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input type="checkbox" x-model="form.newsletter" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                      <span>সাপ্তাহিক নিউজলেটার ও আপডেট</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Toggle Switch: 2FA & Status -->
+                <div class="space-y-3">
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">টগল সুইচ (Toggle Switch)</label>
+                  
+                  <!-- Toggle 1: 2FA -->
+                  <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                    <div>
+                      <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">টু-ফ্যাক্টর অথেনটিকেশন</p>
+                      <p class="text-[10px] text-slate-400">বাড়তি নিরাপত্তা নিশ্চিত করে</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      @click="form.twoFactorAuth = !form.twoFactorAuth"
+                      class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+                      :class="form.twoFactorAuth ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'"
+                    >
+                      <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out" :class="form.twoFactorAuth ? 'translate-x-5' : 'translate-x-0'"></span>
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+
+              <!-- Form Submit Actions Bar -->
+              <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+                <button type="button" @click="resetForm()" class="px-5 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                  বাতিল করুন (Cancel)
+                </button>
+                <button 
+                  type="submit" 
+                  :disabled="isSubmitting"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50"
+                >
+                  <span x-show="!isSubmitting">ফর্ম ডাটা সেভ করুন</span>
+                  <span x-show="isSubmitting" class="inline-flex items-center gap-2">
+                    <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                    সেভ হচ্ছে...
+                  </span>
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </main>
+
+      </div>
+
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- 4. ADD / EDIT USER MODAL (Interactive Dialog)                     -->
+    <!-- ================================================================= -->
+    <div 
+      x-show="userModalOpen" 
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+      @keydown.escape.window="userModalOpen = false"
+    >
+      <div 
+        @click.outside="userModalOpen = false"
+        class="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+      >
+        <!-- Modal Header -->
+        <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <h3 class="font-bold text-base text-slate-900 dark:text-white" x-text="modalMode === 'add' ? '+ নতুন ইউজার যোগ করুন' : 'ইউজার তথ্য আপডেট'"></h3>
+          <button @click="userModalOpen = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <svg class="w-5 h-5"><use href="#icon-x"/></svg>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">পূর্ণ নাম *</label>
+            <input type="text" x-model="modalFormData.name" placeholder="ইউজারের নাম লিখুন" class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">ইমেইল ঠিকানা *</label>
+            <input type="email" x-model="modalFormData.email" placeholder="ইমেইল অ্যাড্রেস লিখুন" class="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">রোল (Role)</label>
+              <select x-model="modalFormData.role" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
+                <option value="Super Admin">Super Admin</option>
+                <option value="Manager">Manager</option>
+                <option value="Developer">Developer</option>
+                <option value="Designer">Designer</option>
+                <option value="Editor">Editor</option>
+                <option value="Member">Member</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">স্ট্যাটাস (Status)</label>
+              <select x-model="modalFormData.status" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200">
+                <option value="Active">Active</option>
+                <option value="Pending">Pending</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2.5">
+          <button @click="userModalOpen = false" class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl">বাতিল</button>
+          <button @click="saveUserModal()" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- 5. TOAST NOTIFICATION POPUP (Animated Feedback)                   -->
+    <!-- ================================================================= -->
+    <div 
+      x-show="toast.show" 
+      x-transition:enter="transition ease-out duration-250"
+      x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:translate-x-4"
+      x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-95"
+      class="fixed bottom-5 right-5 z-50 max-w-sm w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl flex items-start gap-3"
+    >
+      <div 
+        class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+        :class="toast.type === 'error' ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/60' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60'"
+      >
+        <svg class="w-4 h-4"><use :href="toast.type === 'error' ? '#icon-x' : '#icon-check'"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-bold text-slate-900 dark:text-white" x-text="toast.title"></p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2" x-text="toast.message"></p>
+      </div>
+      <button @click="toast.show = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <svg class="w-3.5 h-3.5"><use href="#icon-x"/></svg>
+      </button>
+    </div>
+
+  </body>
+</html>

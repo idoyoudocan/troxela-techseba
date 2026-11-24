@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="bn" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2-Step OTP Verification - Modern Admin Dashboard</title>
+    <meta name="description" content="Two-factor OTP authentication with auto-advancing 6-digit inputs, clipboard paste support, and countdown timer." />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                50: '#eef2ff',
+                100: '#e0e7ff',
+                200: '#c7d2fe',
+                500: '#6366f1',
+                600: '#4f46e5',
+                700: '#4338ca',
+                800: '#3730a3',
+                900: '#312e81',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Alpine.js Core Library -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
+    <style>
+      [x-cloak] { display: none !important; }
+      /* Remove arrow steppers from number inputs */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+    </style>
+  </head>
+
+  <body 
+    x-data="authOtp" 
+    x-cloak 
+    class="min-h-full flex flex-col justify-center bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white relative overflow-x-hidden py-8"
+  >
+
+    <!-- Top Navigation Bar -->
+    <div class="absolute top-4 left-4 right-4 sm:top-6 sm:left-8 sm:right-8 flex items-center justify-between z-10">
+      <a 
+        href="login.html" 
+        class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-xs transition-all hover:-translate-x-0.5"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        লগইনে ফিরুন
+      </a>
+
+      <!-- Dark Mode Toggle -->
+      <button 
+        @click="toggleDarkMode()" 
+        class="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-xs transition-colors"
+      >
+        <template x-if="!darkMode">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </template>
+        <template x-if="darkMode">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </template>
+      </button>
+    </div>
+
+    <!-- Decorative Glow -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+      <div class="absolute -top-40 left-1/3 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-40 right-1/3 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Container -->
+    <div class="w-full max-w-md mx-auto px-4 py-8 sm:px-6">
+
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <!-- Shield / 2FA Icon -->
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-lg shadow-indigo-500/10 mb-4">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+          </svg>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">২-ধাপ ভেরিফিকেশন (OTP)</h1>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 max-w-sm mx-auto">
+          আপনার ইমেইলে পাঠানো <span class="font-semibold text-slate-800 dark:text-slate-200">৬-সংখ্যার কোডটি</span> নিচে প্রবেশ করান
+        </p>
+      </div>
+
+      <!-- Card -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800">
+
+        <!-- Error Alert -->
+        <div 
+          x-show="errorMessage" 
+          x-transition 
+          class="mb-5 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-start gap-2.5 text-rose-700 dark:text-rose-400 text-xs"
+        >
+          <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span x-text="errorMessage"></span>
+        </div>
+
+        <!-- Success Toast -->
+        <div 
+          x-show="isSuccess" 
+          x-transition 
+          class="mb-5 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 text-xs font-medium"
+        >
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>কোড যাচাইকরণ সফল! রিডাইরেক্ট করা হচ্ছে...</span>
+        </div>
+
+        <!-- 6-Digit OTP Form -->
+        <form @submit.prevent="verifyOtp()" class="space-y-6">
+
+          <!-- 6 Individual Input Fields -->
+          <div>
+            <div class="flex items-center justify-between gap-2 sm:gap-2.5" @paste="handlePaste($event)">
+              <template x-for="(digit, index) in digits" :key="index">
+                <input 
+                  type="text" 
+                  maxlength="1" 
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  :id="`otp-input-${index}`"
+                  x-model="digits[index]"
+                  @input="handleInput($event, index)"
+                  @keydown.backspace="handleBackspace($event, index)"
+                  @keydown.arrow-left="focusPrevious(index)"
+                  @keydown.arrow-right="focusNext(index)"
+                  class="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:bg-white dark:focus:bg-slate-900 text-slate-900 dark:text-white transition-all shadow-xs"
+                  :class="digits[index] ? 'border-indigo-500 dark:border-indigo-400 ring-1 ring-indigo-500/30' : ''"
+                />
+              </template>
+            </div>
+            
+            <div class="flex items-center justify-between mt-3 text-[11px] text-slate-400">
+              <span>যেকোনো জায়গায় কপি করে পেস্ট করতে পারেন</span>
+              <button 
+                type="button" 
+                @click="fillDemoOtp()" 
+                class="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                ডেমো ওটিপি পূরণ (123456)
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Action -->
+          <div>
+            <button 
+              type="submit" 
+              :disabled="isLoading || !isFilled"
+              class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-md shadow-indigo-600/25 transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <svg x-show="isLoading" class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span x-text="isLoading ? 'যাচাই করা হচ্ছে...' : 'যাচাই করুন এবং এগিয়ে যান'"></span>
+              <svg x-show="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+              </svg>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Resend Countdown -->
+        <div class="text-center mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            কোড পাননি? 
+            <button 
+              type="button" 
+              @click="resendCode()" 
+              :disabled="countdown > 0"
+              class="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span x-show="countdown > 0" x-text="`আবার পাঠান (${countdown}s)`"></span>
+              <span x-show="countdown === 0">পুনরায় কোড পাঠান</span>
+            </button>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Footer link to change email or back to login -->
+      <div class="mt-6 text-center">
+        <a href="forgot-password.html" class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+          ইমেইল ভুল হয়েছে? <span class="font-semibold underline">ইমেইল পরিবর্তন করুন</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Alpine.js Script Controller -->
+    <script>
+      document.addEventListener('alpine:init', () => {
+        Alpine.data('authOtp', () => ({
+          digits: ['', '', '', '', '', ''],
+          isLoading: false,
+          isSuccess: false,
+          errorMessage: '',
+          countdown: 52,
+          timerInterval: null,
+          darkMode: false,
+
+          get isFilled() {
+            return this.digits.every(d => d.trim() !== '');
+          },
+
+          init() {
+            try {
+              const savedDark = localStorage.getItem('admin_dark_mode');
+              if (savedDark !== null) {
+                this.darkMode = JSON.parse(savedDark);
+                if (this.darkMode) document.documentElement.classList.add('dark');
+              }
+            } catch (e) {}
+
+            // Auto-focus first input on load
+            this.$nextTick(() => {
+              const firstInput = document.getElementById('otp-input-0');
+              if (firstInput) firstInput.focus();
+            });
+
+            this.startCountdown();
+          },
+
+          toggleDarkMode() {
+            this.darkMode = !this.darkMode;
+            if (this.darkMode) {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+            try {
+              localStorage.setItem('admin_dark_mode', JSON.stringify(this.darkMode));
+            } catch (e) {}
+          },
+
+          startCountdown() {
+            if (this.timerInterval) clearInterval(this.timerInterval);
+            this.timerInterval = setInterval(() => {
+              if (this.countdown > 0) {
+                this.countdown--;
+              } else {
+                clearInterval(this.timerInterval);
+              }
+            }, 1000);
+          },
+
+          resendCode() {
+            if (this.countdown > 0) return;
+            this.countdown = 60;
+            this.startCountdown();
+            this.errorMessage = '';
+            alert('আপনার ইমেইলে নতুন ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে!');
+          },
+
+          fillDemoOtp() {
+            this.digits = ['1', '2', '3', '4', '5', '6'];
+            this.errorMessage = '';
+            this.focusInput(5);
+          },
+
+          handleInput(e, index) {
+            const val = e.target.value.replace(/[^0-9]/g, '');
+            this.digits[index] = val ? val.slice(-1) : '';
+            this.errorMessage = '';
+
+            if (this.digits[index] && index < 5) {
+              this.focusInput(index + 1);
+            }
+
+            // Auto-submit if all filled
+            if (this.isFilled) {
+              this.verifyOtp();
+            }
+          },
+
+          handleBackspace(e, index) {
+            if (!this.digits[index] && index > 0) {
+              this.focusInput(index - 1);
+            } else {
+              this.digits[index] = '';
+            }
+          },
+
+          handlePaste(e) {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text').trim();
+            const cleanDigits = text.replace(/[^0-9]/g, '').slice(0, 6);
+            if (!cleanDigits) return;
+
+            for (let i = 0; i < 6; i++) {
+              this.digits[i] = cleanDigits[i] || '';
+            }
+
+            const nextFocusIndex = Math.min(cleanDigits.length, 5);
+            this.focusInput(nextFocusIndex);
+
+            if (cleanDigits.length === 6) {
+              this.verifyOtp();
+            }
+          },
+
+          focusInput(index) {
+            this.$nextTick(() => {
+              const el = document.getElementById(`otp-input-${index}`);
+              if (el) el.focus();
+            });
+          },
+
+          focusPrevious(index) {
+            if (index > 0) this.focusInput(index - 1);
+          },
+
+          focusNext(index) {
+            if (index < 5) this.focusInput(index + 1);
+          },
+
+          verifyOtp() {
+            const code = this.digits.join('');
+            if (code.length < 6) {
+              this.errorMessage = 'অনুগ্রহ করে সম্পূর্ণ ৬-সংখ্যার কোড প্রবেশ করান';
+              return;
+            }
+
+            this.isLoading = true;
+            this.errorMessage = '';
+
+            setTimeout(() => {
+              this.isLoading = false;
+              // For demonstration, accepts 123456 or any 6 digit
+              this.isSuccess = true;
+              setTimeout(() => {
+                window.location.href = 'reset-password.html';
+              }, 1200);
+            }, 800);
+          }
+        }));
+      });
+    </script>
+  </body>
+</html>
